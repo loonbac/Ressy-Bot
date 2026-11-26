@@ -36,8 +36,8 @@ func main() {
 	log.Printf("loaded %d modules and %d commands", len(modules), len(catalog.List()))
 
 	if config.BotToken == "" {
-		log.Print("DISCORD_BOT_TOKEN is not set; Discord stays offline")
-		return
+		log.Print("DISCORD_BOT_TOKEN is not set; Discord stays offline, panel only")
+		<-make(chan struct{})
 	}
 	session, err := discordgo.New("Bot " + config.BotToken)
 	if err != nil {
