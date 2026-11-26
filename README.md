@@ -7,12 +7,14 @@ Modular Discord bot in Go with hot-loadable `.so` plugins, a web admin panel and
 ```sh
 docker build -t ressy-bot .
 docker run --rm -p 8080:8080 \
-  -e DISCORD_BOT_TOKEN -e DISCORD_APP_ID \
+  -e DISCORD_BOT_TOKEN \
   -e DISCORD_CLIENT_ID -e DISCORD_CLIENT_SECRET \
   -e RESSY_SESSION_SECRET -e RESSY_ADMIN_IDS \
   -e RESSY_PANEL_REDIRECT=https://your-host/callback \
   -e LAVALINK_PASSWORD ressy-bot
 ```
+
+The bot user ID is derived from `DISCORD_BOT_TOKEN` via `GET /users/@me`, so no separate app ID is needed.
 
 The image runs the Go host, the compiled `admin.so` and `music.so` plugins, Lavalink 4.2.2 and the YouTube source plugin 1.18.2 in one container. Java 17+, ffmpeg and the Go toolchain are present; a new plugin source can be compiled with `go build -buildmode=plugin` inside the container and dropped into `/app/plugins` for the panel to load.
 

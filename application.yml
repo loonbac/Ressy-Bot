@@ -5,7 +5,7 @@ server:
 lavalink:
   server:
     password: ${LAVALINK_PASSWORD:changeme}
-    # docker-entrypoint.sh exports RESSY_LAVALINK_PASSWORD from LAVALINK_PASSWORD and RESSY_BOT_USER_ID from DISCORD_APP_ID.
+    # docker-entrypoint.sh exports RESSY_LAVALINK_PASSWORD from LAVALINK_PASSWORD; the host derives the bot user ID from DISCORD_BOT_TOKEN via GET /users/@me.
     sources:
       youtube: false
   plugins:

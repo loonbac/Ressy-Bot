@@ -10,18 +10,18 @@ import (
 // Config holds the process settings read from the environment.
 type Config struct {
 	BotToken        string
-	AppID           string
+	AppID           string // bot user ID, set at startup from DISCORD_BOT_TOKEN
 	PluginDirectory string
 	SettingsPath    string
 	PanelAddress    string
 	VoiceLookup     core.VoiceLookup
 }
 
-// LoadConfig reads settings from environment variables.
+// LoadConfig reads settings from environment variables. The bot user ID is not
+// read here: the host derives it from DISCORD_BOT_TOKEN via GET /users/@me.
 func LoadConfig() Config {
 	return Config{
 		BotToken:        os.Getenv("DISCORD_BOT_TOKEN"),
-		AppID:           os.Getenv("DISCORD_APP_ID"),
 		PluginDirectory: envOrDefault("RESSY_PLUGIN_DIR", "./plugins"),
 		SettingsPath:    envOrDefault("RESSY_SETTINGS_PATH", "data/modules.json"),
 		PanelAddress:    envOrDefault("RESSY_PANEL_ADDR", ":8080"),
