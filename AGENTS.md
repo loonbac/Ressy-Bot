@@ -6,7 +6,7 @@ revisión nativa, entrega e instabox están en el `AGENTS.md` global y no se rep
 
 ## 0. Mapa de este repositorio (rellenar por repo)
 
-- **Stack:** Go 1.26 con `go mod`; Discord `bwmarrin/discordgo` y audio Lavalink 4 se incorporan con el primer módulo funcional; una sola imagen Docker con Go, Java y ffmpeg.
+- **Stack:** Go 1.27 con `go mod`; Discord `bwmarrin/discordgo` y audio Lavalink 4 se incorporan con el primer módulo funcional; una sola imagen Docker con Go, Java y ffmpeg.
 - **Comandos:**
   - Prueba de un archivo: `go test ./src/modules/<modulo> -run Test<Nombre>`
   - Pruebas completas: `go test ./...`

@@ -12,6 +12,17 @@ type GuildID string
 // ModuleName identifies an installed module.
 type ModuleName string
 
+// VoiceState is the Discord data an audio node needs to join a channel.
+type VoiceState struct {
+	Token     string
+	Endpoint  string
+	SessionID string
+	ChannelID string
+}
+
+// VoiceLookup finds the bot voice state for a guild.
+type VoiceLookup func(guildID string) (VoiceState, bool)
+
 var (
 	// ErrPluginPathEmpty means no plugin path was supplied.
 	ErrPluginPathEmpty = errors.New("plugin path is empty")
@@ -32,8 +43,9 @@ type Module interface {
 
 // Registration carries the host services a module may use.
 type Registration struct {
-	Commands CommandCatalog
-	Settings ModuleSettings
+	Commands    CommandCatalog
+	Settings    ModuleSettings
+	VoiceLookup VoiceLookup
 }
 
 // Command describes one slash command contributed by a module.

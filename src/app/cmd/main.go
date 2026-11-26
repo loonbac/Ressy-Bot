@@ -19,6 +19,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	voices := app.NewVoiceStateStore()
+	config.VoiceLookup = voices.Lookup
 	catalog, modules, err := app.Start(config, settings)
 	if err != nil {
 		log.Fatal(err)
@@ -43,6 +45,7 @@ func main() {
 	}
 	session.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildVoiceStates
 	session.AddHandler(app.ServeInteractions(catalog, settings))
+	voices.Attach(session)
 	if err := session.Open(); err != nil {
 		log.Fatal(err)
 	}

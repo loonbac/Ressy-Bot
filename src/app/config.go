@@ -1,7 +1,11 @@
 // Package app wires the bot process from its configured modules.
 package app
 
-import "os"
+import (
+	"os"
+
+	"github.com/loonbac/Ressy-Bot/src/modules/core"
+)
 
 // Config holds the process settings read from the environment.
 type Config struct {
@@ -10,6 +14,7 @@ type Config struct {
 	PluginDirectory string
 	SettingsPath    string
 	PanelAddress    string
+	VoiceLookup     core.VoiceLookup
 }
 
 // LoadConfig reads settings from environment variables.

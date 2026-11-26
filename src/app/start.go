@@ -26,7 +26,9 @@ func Start(config Config, settings core.ModuleSettings) (core.CommandCatalog, []
 		if err != nil {
 			return nil, nil, fmt.Errorf("load %s: %w", entry.Name(), err)
 		}
-		if err := module.Register(core.Registration{Commands: catalog, Settings: settings}); err != nil {
+		if err := module.Register(core.Registration{
+			Commands: catalog, Settings: settings, VoiceLookup: config.VoiceLookup,
+		}); err != nil {
 			return nil, nil, fmt.Errorf("register %s: %w", module.Name(), err)
 		}
 		modules = append(modules, module)
