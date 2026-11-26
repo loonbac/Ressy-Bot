@@ -12,7 +12,14 @@ import (
 
 func main() {
 	config := app.LoadConfig()
-	catalog, modules, err := app.Start(config)
+	if err := os.MkdirAll(filepath.Dir(config.SettingsPath), 0o755); err != nil {
+		log.Fatal(err)
+	}
+	settings, err := core.NewFileModuleSettings(config.SettingsPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	catalog, modules, err := app.Start(config, settings)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,13 +31,6 @@ func main() {
 		}
 	}()
 
-	if err := os.MkdirAll(filepath.Dir(config.SettingsPath), 0o755); err != nil {
-		log.Fatal(err)
-	}
-	settings, err := core.NewFileModuleSettings(config.SettingsPath)
-	if err != nil {
-		log.Fatal(err)
-	}
 	log.Printf("loaded %d modules and %d commands", len(modules), len(catalog.List()))
 
 	if config.BotToken == "" {

@@ -7,7 +7,7 @@ import (
 )
 
 func TestStartWithEmptyDirectory(t *testing.T) {
-	catalog, modules, err := Start(Config{PluginDirectory: t.TempDir()})
+	catalog, modules, err := Start(Config{PluginDirectory: t.TempDir()}, stubModuleSettings{enabled: true})
 	if err != nil {
 		t.Fatalf("Start returned error: %v", err)
 	}
@@ -25,7 +25,7 @@ func TestStartIgnoresFilesThatAreNotPlugins(t *testing.T) {
 		t.Fatalf("write note: %v", err)
 	}
 
-	catalog, modules, err := Start(Config{PluginDirectory: directory})
+	catalog, modules, err := Start(Config{PluginDirectory: directory}, stubModuleSettings{enabled: true})
 	if err != nil {
 		t.Fatalf("Start returned error: %v", err)
 	}
@@ -35,7 +35,7 @@ func TestStartIgnoresFilesThatAreNotPlugins(t *testing.T) {
 }
 
 func TestStartReportsMissingDirectory(t *testing.T) {
-	_, _, err := Start(Config{PluginDirectory: filepath.Join(t.TempDir(), "absent")})
+	_, _, err := Start(Config{PluginDirectory: filepath.Join(t.TempDir(), "absent")}, stubModuleSettings{enabled: true})
 	if err == nil {
 		t.Fatal("Start returned no error for a missing plugin directory")
 	}

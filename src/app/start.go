@@ -9,7 +9,7 @@ import (
 )
 
 // Start loads installed modules and registers their commands.
-func Start(config Config) (core.CommandCatalog, []core.Module, error) {
+func Start(config Config, settings core.ModuleSettings) (core.CommandCatalog, []core.Module, error) {
 	catalog := core.NewCommandCatalog()
 	modules := make([]core.Module, 0)
 
@@ -26,7 +26,7 @@ func Start(config Config) (core.CommandCatalog, []core.Module, error) {
 		if err != nil {
 			return nil, nil, fmt.Errorf("load %s: %w", entry.Name(), err)
 		}
-		if err := module.Register(core.Registration{Commands: catalog}); err != nil {
+		if err := module.Register(core.Registration{Commands: catalog, Settings: settings}); err != nil {
 			return nil, nil, fmt.Errorf("register %s: %w", module.Name(), err)
 		}
 		modules = append(modules, module)

@@ -16,8 +16,8 @@ S5. "https://github.com/loonbac/Ressy-Bot.git usa este repo borra todo lo que es
 
 ## Tasks
 
-- T1 — S5 — inline — Crear commit raíz vacío, force push a `main` y borrar las demás ramas del repo `loonbac/Ressy-Bot`; sin leer el contenido previo. Commit: —
-- T2 — S1,S2 — inline — Rellenar `AGENTS.md` §0 con el mapa Go; `go.mod`; `src/app/` con arranque; `src/modules/core/` con contrato de módulo y cargador de `.so` inyectable; pruebas del cargador. Commit: —
+- T1 — S5 — inline — Crear el repo `loonbac/Ressy-Bot` desde cero y subir el commit raíz; sin leer el contenido previo. Commit: `2409991`.
+- T2 — S1,S2 — inline — Rellenar `AGENTS.md` §0 con el mapa Go; `go.mod`; `src/app/` con arranque; `src/modules/core/` con contrato de módulo y cargador de `.so` inyectable; pruebas del cargador. Commit: `d191ac5` (rama `feat/plugin-core`).
 - T3 — S2 — inline — Registro de comandos del bot y activación/desactivación de módulos por guild, con pruebas. Commit: —
 - T4 — S3 — inline — Módulo `admin`: servidor `net/http`, OAuth2 de Discord, cookie firmada, endpoint de carga de plugins y UI de administración; pruebas. Commit: —
 - T5 — S1,S4 — worker `gentle-ai-worker` — Módulo `music`: rebanadas `play`, `skip`, `queue`, `stop`, `now-playing`, interfaz `AudioNode` con nodo falso y pruebas. Commit: —
@@ -30,4 +30,6 @@ L1. "quiero crear un bot de discord completo modular hecho en go siguiendo las r
 
 L2. Decisiones del usuario: "Plugins .so en caliente"; "Go web + OAuth de Discord (recomendado)"; "todo este proyecto debe ir en un solo docker, entonces hay que ver la manera de que funcione bien, quiero primero traer musica desde youtube"; "https://github.com/loonbac/Ressy-Bot.git usa este repo borra todo lo que estaba ahi, ya no lo necesito, vamos a empezar desde 0 no revises nada de lo que estaba ahi".
 
-L3. Evidencia de estado: `ressy` contenía solo `AGENTS.md` y `.atl/`; `git rev-parse --show-toplevel` devolvía `/home/loonbac/Proyectos`. El remoto `loonbac/Ressy-Bot` tenía `main` y 7 ramas; acceso GitHub verificado con `gh auth status` (scopes `repo`, `workflow`). Go 1.26.8 y Docker 29.8.1 disponibles; sesión instabox activa.
+L3. Evidencia de estado: `ressy` contenía solo `AGENTS.md` y `.atl/`; `git rev-parse --show-toplevel` devolvía `/home/loonbac/Proyectos`. El remoto `loonbac/Ressy-Bot` tenía `main` y 7 ramas; acceso GitHub verificado con `gh auth status` (scopes `repo`, `workflow`). Go 1.26.8 y Docker 29.8.1 disponibles; sesión instabox activa. La política de seguridad bloqueó el force-push y la eliminación de ramas; el usuario borró el repo y pidió crear uno nuevo, lo que se hizo sin操作 destructivas.
+
+L4. El slice de T2 tiene 443 líneas autoradas, por encima del objetivo de ~400; se registra el límite aquí y el siguiente slice se mantiene por debajo. Verificación: `go test ./...` y `go vet ./...` limpios; spike real compiló un plugin `main` con `var Module core.Module = demoModule{}`, lo cargó con `core.OpenPlugin` y registró 1 comando (`module=demo commands=1`). Descubierto: `plugin.Lookup` devuelve `*core.Module` para variables exportadas; el cargador acepta tanto `*Module` como `Module`. Assess nativo: `risk: medium`, `reviewDue: false`.

@@ -33,6 +33,7 @@ type Module interface {
 // Registration carries the host services a module may use.
 type Registration struct {
 	Commands CommandCatalog
+	Settings ModuleSettings
 }
 
 // Command describes one slash command contributed by a module.
