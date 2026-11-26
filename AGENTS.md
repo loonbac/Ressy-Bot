@@ -6,21 +6,22 @@ revisión nativa, entrega e instabox están en el `AGENTS.md` global y no se rep
 
 ## 0. Mapa de este repositorio (rellenar por repo)
 
-- **Stack:** <!-- lenguaje, framework, gestor de paquetes -->
+- **Stack:** Go 1.26 con `go mod`; Discord `bwmarrin/discordgo` y audio Lavalink 4 se incorporan con el primer módulo funcional; una sola imagen Docker con Go, Java y ffmpeg.
 - **Comandos:**
-  - Prueba de un archivo: `<!-- comando -->`
-  - Pruebas completas: `<!-- comando -->`
-  - Lint / tipos: `<!-- comando -->`
-  - Build: `<!-- comando -->`
-- **Checks:** <!-- linter y archivo de configuración; reglas propias y dónde viven; CI -->
-  (si no hay, ver sección 7, paso 2)
+  - Prueba de un archivo: `go test ./src/modules/<modulo> -run Test<Nombre>`
+  - Pruebas completas: `go test ./...`
+  - Lint / tipos: `go vet ./...`
+  - Build: `go build ./...`; imagen: `docker build -t ressy-bot .`
+- **Checks:** `go vet ./...` y `go test ./...` desde la raíz; las reglas de arquitectura viven en este archivo. No hay linter de nombres ni CI todavía: se añaden en el paso 2 de la sección 7 cuando aparezca la primera corrección.
 - **Módulos:**
 
   | Ruta | Responsabilidad | API pública |
   | :--- | :--- | :--- |
-  | `src/modules/<modulo>/` | <!-- una frase --> | `public.*` |
+  | `src/modules/core/` | Contrato de módulos, catálogo de comandos y cargador de plugins `.so` | `core.Module`, `core.LoadModule`, `core.OpenPlugin`, `core.NewCommandCatalog` |
+  | `src/modules/music/` | Cola y reproducción de música desde YouTube vía Lavalink | `music.New` (lo exporta el plugin) |
+  | `src/modules/admin/` | Panel web con OAuth de Discord y control de módulos | `admin.New` |
 
-- **No editar a mano:** <!-- código generado (y comando para regenerarlo), migraciones aplicadas, vendor -->
+- **No editar a mano:** `.atl/` (metadatos del harness), los `*.so` generados por `go build -buildmode=plugin` y `data/` (SQLite en ejecución).
 
 Si el mapa está incompleto o es incorrecto, corregirlo en el mismo cambio que lo descubre.
 
