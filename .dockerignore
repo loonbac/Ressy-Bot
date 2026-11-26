@@ -4,3 +4,7 @@ data
 *.so
 README.md
 odd
+
+# Environment files: real ones must never enter the build context.
+.env
+.env.*

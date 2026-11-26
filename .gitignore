@@ -3,3 +3,9 @@
 /bin/
 *.local
 *.so
+
+# Environment files: real ones stay local, the template is trackable.
+.env
+.env.*
+!.env.example
+!env.example
