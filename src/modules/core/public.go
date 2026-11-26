@@ -6,6 +6,12 @@ import "errors"
 // ModuleSymbol is the literal exported variable every plugin must declare.
 const ModuleSymbol = "Module"
 
+// GuildID identifies a Discord guild.
+type GuildID string
+
+// ModuleName identifies an installed module.
+type ModuleName string
+
 var (
 	// ErrPluginPathEmpty means no plugin path was supplied.
 	ErrPluginPathEmpty = errors.New("plugin path is empty")
@@ -33,6 +39,7 @@ type Registration struct {
 type Command struct {
 	Name        string
 	Description string
+	Module      string
 	Execute     func(context CommandContext) error
 }
 
