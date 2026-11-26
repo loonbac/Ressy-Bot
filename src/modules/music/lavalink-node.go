@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -21,15 +22,16 @@ type lavalinkNode struct {
 	mu        sync.RWMutex
 	sessionID string
 	conn      *websocket.Conn
+	closed    atomic.Bool
 }
 
 // NewLavalinkNode creates a REST client and starts listening for node events.
 func NewLavalinkNode(config LavalinkConfig) AudioNode {
 	node := &lavalinkNode{config: config, client: &http.Client{Timeout: 10 * time.Second}}
 	go func() {
-		for attempt := 1; attempt <= 5; attempt++ {
+		for attempt := 1; !node.closed.Load(); attempt++ {
 			node.followEvents()
-			time.Sleep(time.Duration(attempt) * time.Second)
+			time.Sleep(time.Duration(min(attempt, 30)) * time.Second)
 		}
 	}()
 	return node
@@ -121,8 +123,25 @@ func (n *lavalinkNode) Resolve(query string) ([]Track, error) {
 		return nil, nil
 	}
 	var items []lavalinkTrack
-	if err := json.Unmarshal(result.Data, &items); err != nil { // v4 search: data is a track array
-		return nil, err
+	switch result.LoadType {
+	case "track": // v4 sends a single track object
+		var item lavalinkTrack
+		if err := json.Unmarshal(result.Data, &item); err != nil {
+			return nil, err
+		}
+		items = []lavalinkTrack{item}
+	case "playlist": // v4 wraps the tracks in an object
+		var playlist struct {
+			Tracks []lavalinkTrack
+		}
+		if err := json.Unmarshal(result.Data, &playlist); err != nil {
+			return nil, err
+		}
+		items = playlist.Tracks
+	default: // "search": v4 sends a bare track array
+		if err := json.Unmarshal(result.Data, &items); err != nil {
+			return nil, err
+		}
 	}
 	tracks := make([]Track, 0, len(items))
 	for _, item := range items {
@@ -205,6 +224,7 @@ func (n *lavalinkNode) NowPlaying(guildID string) (Track, bool) {
 }
 
 func (n *lavalinkNode) Close() error {
+	n.closed.Store(true)
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	if n.conn == nil {
