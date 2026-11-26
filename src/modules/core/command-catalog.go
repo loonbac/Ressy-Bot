@@ -3,9 +3,11 @@ package core
 import (
 	"fmt"
 	"sort"
+	"sync"
 )
 
 type commandCatalog struct {
+	mu     sync.RWMutex
 	byName map[string]Command
 }
 
@@ -15,6 +17,8 @@ func NewCommandCatalog() CommandCatalog {
 }
 
 func (c *commandCatalog) Add(command Command) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if command.Name == "" {
 		return ErrCommandNameEmpty
 	}
@@ -26,6 +30,8 @@ func (c *commandCatalog) Add(command Command) error {
 }
 
 func (c *commandCatalog) List() []Command {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	names := make([]string, 0, len(c.byName))
 	for name := range c.byName {
 		names = append(names, name)

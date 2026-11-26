@@ -21,10 +21,10 @@ func (m *musicModule) Register(registration core.Registration) error {
 	}
 	commands := []core.Command{
 		NewPlayCommand(m.node, m.queues, lookup),
-		NewSkipCommand(m.node, m.queues),
+		NewSkipCommand(m.node, m.queues, lookup),
 		NewQueueCommand(m.queues),
 		NewStopCommand(m.node, m.queues),
-		NewNowPlayingCommand(m.queues),
+		NewNowPlayingCommand(m.node, m.queues),
 	}
 	for _, command := range commands {
 		if err := registration.Commands.Add(command); err != nil {

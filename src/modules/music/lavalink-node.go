@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,7 +26,12 @@ type lavalinkNode struct {
 // NewLavalinkNode creates a REST client and starts listening for node events.
 func NewLavalinkNode(config LavalinkConfig) AudioNode {
 	node := &lavalinkNode{config: config, client: &http.Client{Timeout: 10 * time.Second}}
-	go node.followEvents()
+	go func() {
+		for attempt := 1; attempt <= 5; attempt++ {
+			node.followEvents()
+			time.Sleep(time.Duration(attempt) * time.Second)
+		}
+	}()
 	return node
 }
 
@@ -44,6 +50,7 @@ func (n *lavalinkNode) followEvents() {
 	}
 	connection, _, err := websocket.DefaultDialer.Dial(endpoint, headers)
 	if err != nil {
+		log.Printf("lavalink: event dial failed: %v", err)
 		return
 	}
 	n.mu.Lock()
@@ -52,6 +59,12 @@ func (n *lavalinkNode) followEvents() {
 	for {
 		_, message, err := connection.ReadMessage()
 		if err != nil {
+			connection.Close()
+			n.mu.Lock()
+			n.conn = nil
+			n.sessionID = ""
+			n.mu.Unlock()
+			log.Printf("lavalink: event stream lost: %v", err)
 			return
 		}
 		var event struct {
@@ -90,17 +103,16 @@ func (n *lavalinkNode) Resolve(query string) ([]Track, error) {
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("load tracks returned %s", response.Status)
 	}
+	type lavalinkTrack struct {
+		Encoded string `json:"encoded"`
+		Info    struct {
+			Title string `json:"title"`
+			URI   string `json:"uri"`
+		} `json:"info"`
+	}
 	var result struct {
-		LoadType string `json:"loadType"`
-		Data     struct {
-			Tracks []struct {
-				Encoded string `json:"encoded"`
-				Info    struct {
-					Title string `json:"title"`
-					URI   string `json:"uri"`
-				} `json:"info"`
-			} `json:"tracks"`
-		} `json:"data"`
+		LoadType string          `json:"loadType"`
+		Data     json.RawMessage `json:"data"`
 	}
 	if err := json.Unmarshal(payload, &result); err != nil {
 		return nil, err
@@ -108,8 +120,12 @@ func (n *lavalinkNode) Resolve(query string) ([]Track, error) {
 	if result.LoadType == "empty" || result.LoadType == "error" {
 		return nil, nil
 	}
-	tracks := make([]Track, 0, len(result.Data.Tracks))
-	for _, item := range result.Data.Tracks {
+	var items []lavalinkTrack
+	if err := json.Unmarshal(result.Data, &items); err != nil { // v4 search: data is a track array
+		return nil, err
+	}
+	tracks := make([]Track, 0, len(items))
+	for _, item := range items {
 		tracks = append(tracks, Track{Encoded: item.Encoded, Title: item.Info.Title, URI: item.Info.URI})
 	}
 	return tracks, nil

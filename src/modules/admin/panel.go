@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/loonbac/Ressy-Bot/src/modules/core"
@@ -15,11 +16,29 @@ type panel struct {
 	catalog  core.CommandCatalog
 	settings core.ModuleSettings
 	server   *http.Server
+	publish  func(core.CommandCatalog) error
+	open     func(string) (core.Module, error)
 }
 
 func (p *panel) Name() string { return "admin" }
 
+// SetCommandCatalogPublisher installs the callback that publishes catalog commands to Discord.
+func (p *panel) SetCommandCatalogPublisher(publish func(core.CommandCatalog) error) {
+	p.publish = publish
+}
+
 func (p *panel) Register(registration core.Registration) error {
+	admins := make([]string, 0, len(p.config.AdminUserIDs))
+	for _, id := range p.config.AdminUserIDs {
+		if id = strings.TrimSpace(id); id != "" {
+			admins = append(admins, id)
+		}
+	}
+	if strings.TrimSpace(p.config.SessionSecret) == "" || len(admins) == 0 {
+		p.config.AdminUserIDs = nil
+		return errors.New("admin panel: a session secret and at least one admin user id are required")
+	}
+	p.config.AdminUserIDs, p.open = admins, core.OpenPlugin
 	p.catalog = registration.Commands
 	p.settings = registration.Settings
 	p.server = &http.Server{Addr: p.config.PanelAddress, Handler: p.handler()}

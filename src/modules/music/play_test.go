@@ -11,6 +11,7 @@ type fakeAudioNode struct {
 	tracks  []Track
 	played  map[string]Track
 	stopped []string
+	now     Track
 }
 
 func (n *fakeAudioNode) Resolve(string) ([]Track, error) { return n.tracks, nil }
@@ -25,8 +26,10 @@ func (n *fakeAudioNode) Stop(guildID string) error {
 	n.stopped = append(n.stopped, guildID)
 	return nil
 }
-func (n *fakeAudioNode) NowPlaying(string) (Track, bool) { return Track{}, false }
+func (n *fakeAudioNode) NowPlaying(string) (Track, bool) { return n.now, n.now.Title != "" }
 func (n *fakeAudioNode) Close() error                    { return nil }
+
+func foundVoice(string) (core.VoiceState, bool) { return core.VoiceState{ChannelID: "c1"}, true }
 
 func runCommand(command core.Command, guildID string, args ...string) string {
 	reply := ""

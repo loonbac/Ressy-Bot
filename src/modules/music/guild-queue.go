@@ -32,6 +32,11 @@ func (q *guildQueues) Next(guildID string) (Track, bool) {
 	q.waiting[guildID] = tracks[1:]
 	return tracks[0], true
 }
+func (q *guildQueues) SetCurrent(guildID string, track Track) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	q.current[guildID] = track
+}
 
 func (q *guildQueues) Clear(guildID string) {
 	q.mu.Lock()

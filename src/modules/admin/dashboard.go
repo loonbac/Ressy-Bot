@@ -58,6 +58,10 @@ func (p *panel) serveDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *panel) serveToggle(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	if !p.hasSession(r) {
 		http.Error(w, "authentication required", http.StatusUnauthorized)
 		return
@@ -81,6 +85,10 @@ func (p *panel) serveToggle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *panel) serveLoad(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	if !p.hasSession(r) {
 		http.Error(w, "authentication required", http.StatusUnauthorized)
 		return
@@ -95,7 +103,7 @@ func (p *panel) serveLoad(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "plugin file not found", http.StatusNotFound)
 		return
 	}
-	module, err := core.OpenPlugin(path)
+	module, err := p.open(path)
 	if err != nil {
 		http.Error(w, "plugin could not be loaded", http.StatusBadGateway)
 		return
@@ -103,6 +111,12 @@ func (p *panel) serveLoad(w http.ResponseWriter, r *http.Request) {
 	if err := module.Register(core.Registration{Commands: p.catalog, Settings: p.settings}); err != nil {
 		http.Error(w, "plugin could not be registered", http.StatusConflict)
 		return
+	}
+	if p.publish != nil {
+		if err := p.publish(p.catalog); err != nil {
+			http.Error(w, "commands could not be published to Discord", http.StatusBadGateway)
+			return
+		}
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

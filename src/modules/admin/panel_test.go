@@ -6,11 +6,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/loonbac/Ressy-Bot/src/modules/core"
 )
+
+type stubLoadedPlugin struct{ core.Module }
+
+func (stubLoadedPlugin) Register(r core.Registration) error {
+	return r.Commands.Add(core.Command{Name: "loaded"})
+}
 
 type stubAdminSettings struct {
 	guild   core.GuildID
@@ -122,6 +129,36 @@ func TestToggleUpdatesModuleSettings(t *testing.T) {
 	}
 	if settings.guild != "g1" || settings.module != "music" || !settings.enabled {
 		t.Fatalf("settings = %+v", settings)
+	}
+}
+
+func TestRegisterRejectsUnsafeConfig(t *testing.T) {
+	p := &panel{config: Config{AdminUserIDs: []string{"admin-1"}}}
+	if err := p.Register(core.Registration{}); err == nil || len(p.config.AdminUserIDs) != 0 {
+		t.Fatalf("insecure config accepted: %v", err)
+	}
+}
+
+func TestMutatingHandlersRejectGET(t *testing.T) {
+	p, handler, settings := newTestPanel()
+	p.settings = settings
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, sessionRequest(http.MethodGet, "/modules/toggle?guild=g1&module=music&enabled=on"))
+	if recorder.Code != http.StatusMethodNotAllowed || settings.guild != "" {
+		t.Fatalf("status = %d, settings = %+v", recorder.Code, settings)
+	}
+}
+
+func TestLoadPublishesLoadedCommands(t *testing.T) {
+	p, handler, _ := newTestPanel()
+	p.catalog, p.config.PluginDirectory = core.NewCommandCatalog(), t.TempDir()
+	p.open = func(string) (core.Module, error) { return stubLoadedPlugin{}, nil }
+	_ = os.WriteFile(p.config.PluginDirectory+"/x.so", nil, 0o644)
+	var published string
+	p.publish = func(c core.CommandCatalog) error { published = c.List()[0].Name; return nil }
+	handler.ServeHTTP(httptest.NewRecorder(), sessionRequest(http.MethodPost, "/modules/load?name=x.so"))
+	if published != "loaded" {
+		t.Fatalf("published = %q, want loaded", published)
 	}
 }
 

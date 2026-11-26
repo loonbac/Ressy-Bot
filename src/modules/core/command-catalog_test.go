@@ -37,6 +37,16 @@ func TestCommandCatalogRejectsDuplicateName(t *testing.T) {
 	}
 }
 
+func TestCommandCatalogIsSafeUnderConcurrentAddAndList(t *testing.T) {
+	catalog := NewCommandCatalog()
+	added := make(chan error, 1)
+	go func() {
+		added <- catalog.Add(Command{Name: "play"})
+	}()
+	catalog.List()
+	<-added
+}
+
 func TestCommandCatalogRejectsEmptyName(t *testing.T) {
 	err := NewCommandCatalog().Add(Command{})
 	if !errors.Is(err, ErrCommandNameEmpty) {

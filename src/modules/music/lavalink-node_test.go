@@ -19,7 +19,7 @@ func TestLavalinkNodeResolvesYouTubeSearch(t *testing.T) {
 			t.Errorf("authorization = %q", got)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"loadType":"search","data":{"tracks":[{"encoded":"abc","info":{"title":"Song","uri":"https://example.test"}}]}}`))
+		_, _ = w.Write([]byte(`{"loadType":"search","data":[{"encoded":"abc","info":{"identifier":"abc","isSeekable":true,"author":"Artist","length":180000,"title":"Song","uri":"https://example.test"},"pluginInfo":{}}]}`))
 	}))
 	defer server.Close()
 

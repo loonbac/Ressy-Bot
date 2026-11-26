@@ -30,6 +30,7 @@ func NewPlayCommand(node AudioNode, queues *guildQueues, lookup VoiceLookup) cor
 			if err := node.Play(context.GuildID, track, voice); err != nil {
 				return err
 			}
+			queues.SetCurrent(context.GuildID, track)
 			return context.Reply("Queued: " + track.Title)
 		},
 	}

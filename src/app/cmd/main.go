@@ -52,8 +52,17 @@ func main() {
 	defer session.Close()
 
 	if config.AppID != "" {
-		if err := app.RegisterCommands(app.NewDiscordCommandPublisher(session), config.AppID, catalog); err != nil {
+		publisher := app.NewDiscordCommandPublisher(session)
+		publish := func(loaded core.CommandCatalog) error { return app.RegisterCommands(publisher, config.AppID, loaded) }
+		if err := publish(catalog); err != nil {
 			log.Printf("register commands: %v", err)
+		}
+		for _, module := range modules {
+			if setter, ok := module.(interface {
+				SetCommandCatalogPublisher(func(core.CommandCatalog) error)
+			}); ok {
+				setter.SetCommandCatalogPublisher(publish)
+			}
 		}
 	}
 	log.Print("bot connected; press CTRL-C to stop")

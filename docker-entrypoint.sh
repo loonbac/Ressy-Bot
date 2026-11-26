@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export LAVALINK_PASSWORD="${LAVALINK_PASSWORD:-changeme}"
+export RESSY_LAVALINK_PASSWORD="$LAVALINK_PASSWORD" RESSY_BOT_USER_ID="${RESSY_BOT_USER_ID:-${DISCORD_APP_ID:-}}"
 cd /app/lavalink
 java -jar Lavalink.jar > logs/lavalink.log 2>&1 &
 node_pid=$!

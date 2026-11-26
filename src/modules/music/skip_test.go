@@ -6,23 +6,23 @@ import (
 )
 
 func TestSkipAdvancesQueue(t *testing.T) {
+	node := &fakeAudioNode{}
 	queues := newGuildQueues()
 	queues.Enqueue("g1", Track{Title: "first"})
 	queues.Enqueue("g1", Track{Title: "second"})
 
-	reply := runCommand(NewSkipCommand(&fakeAudioNode{}, queues), "g1")
+	reply := runCommand(NewSkipCommand(node, queues, foundVoice), "g1")
 
 	if !strings.Contains(reply, "first") {
 		t.Fatalf("reply = %q", reply)
 	}
-	waiting := queues.List("g1")
-	if len(waiting) != 1 || waiting[0].Title != "second" {
-		t.Fatalf("queue = %+v", waiting)
+	if len(node.stopped) != 1 || node.played["g1"].Title != "first" {
+		t.Fatalf("stopped=%v played=%+v", node.stopped, node.played)
 	}
 }
 
 func TestSkipReportsEmptyQueue(t *testing.T) {
-	reply := runCommand(NewSkipCommand(&fakeAudioNode{}, newGuildQueues()), "g1")
+	reply := runCommand(NewSkipCommand(&fakeAudioNode{}, newGuildQueues(), foundVoice), "g1")
 	if !strings.Contains(reply, "empty") {
 		t.Fatalf("reply = %q", reply)
 	}
