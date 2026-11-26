@@ -1,0 +1,5 @@
+/.atl/
+/data/
+/bin/
+*.local
+*.so
